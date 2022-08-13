@@ -1,13 +1,14 @@
+import api.client.OrdersClient;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.notNullValue;
@@ -15,22 +16,21 @@ import static org.hamcrest.Matchers.notNullValue;
 @RunWith(Parameterized.class)
 public class CreateOrderTest {
     private final String color;
+    String track;
 
     public CreateOrderTest(String color) {
         this.color = color;
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "Тестовые данные: {0} {1}")
     public static Object[] dataForTest() {
         return new Object[][]{
-                {"src/test/resources/createOrderBlack.json"},
-                {"src/test/resources/createOrderGrey.json"},
-                {"src/test/resources/createOrderBlackAndGrey.json"},
-                {"src/test/resources/createOrderWOColor.json"}
+                {"createOrderBlack.json"},
+                {"createOrderGrey.json"},
+                {"createOrderBlackAndGrey.json"},
+                {"createOrderWOColor.json"}
         };
     }
-
-    String track;
 
     @Before
     public void setUp() {
@@ -40,42 +40,25 @@ public class CreateOrderTest {
     @After
     public void tearDown() {
         try {
-            Response cancel =
-                    given()
-                            .header("Content-type", "application/json")
-                            .and()
-                            .body("{\"track\":" + track + "}")
-                            .when()
-                            .put("/api/v1/orders/cancel");
+            OrdersClient ordersClient = new OrdersClient();
+            ordersClient.cancelOrder(track);
         } catch (Exception e) {
         }
     }
 
     @Test
+    @DisplayName("Check struct of correct response")
     public void trackReturns() {
-        File json = new File("src/test/resources/createOrderBlack.json");
-        Response response =
-                given()
-                        .header("Content-type", "application/json")
-                        .and()
-                        .body(json)
-                        .when()
-                        .post("/api/v1/orders");
-        response.then().assertThat().body("track", notNullValue());
+        OrdersClient ordersClient = new OrdersClient();
+        Response correctAnswer = ordersClient.createOrder("createOrderBlack.json");
+        correctAnswer.then().assertThat().statusCode(201).and().body("track", notNullValue());
     }
 
     @Test
+    @DisplayName("Check order create with all avail colors")
     public void createOrder() {
-        File json = new File(color);
-        Response response =
-                given()
-                        .header("Content-type", "application/json")
-                        .and()
-                        .body(json)
-                        .when()
-                        .post("/api/v1/orders");
-        response.then().body("track", notNullValue())
-                .and()
-                .statusCode(201);
+        OrdersClient ordersClient = new OrdersClient();
+        Response correctAnswer = ordersClient.createOrder(color);
+        correctAnswer.then().assertThat().statusCode(201).and().body("track", notNullValue());
     }
 }
