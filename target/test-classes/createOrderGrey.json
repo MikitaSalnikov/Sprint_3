@@ -1,0 +1,13 @@
+{
+    "firstName": "Sid",
+    "lastName": "Vicious",
+    "address": "London, England",
+    "metroStation": 4,
+    "phone": "+7 800 355 35 35",
+    "rentTime": 5,
+    "deliveryDate": "2020-08-09",
+    "comment": "Never Mind the Bollocks, Here's the Sex Pistols",
+    "color": [
+        "GREY"
+    ]
+}
